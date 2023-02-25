@@ -1,111 +1,123 @@
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f7f7f7;
-  }
-  
-  h1 {
-    font-size: 2.5rem;
-    font-weight: bold;
-    text-align: center;
-    margin: 2rem 0;
-  }
-  
-  p {
-    font-size: 1.5rem;
-    text-align: center;
-    margin: 1rem 0;
-  }
-  
-  form {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-top: 2rem;
-  }
-  
-  label {
-    font-size: 1.2rem;
-    margin: 1rem 0;
-  }
-  
-  input[type="text"], input[type="radio"] {
-    font-size: 1.2rem;
-    padding: 0.5rem;
-    border-radius: 0.25rem;
-    border: none;
-    margin: 0.5rem 0;
-  }
-  
-  button {
-    font-size: 1.2rem;
-    font-weight: bold;
-    padding: 1rem;
-    border-radius: 0.25rem;
-    border: none;
-    margin-top: 1rem;
-    background-color: #007bff;
-    color: #fff;
-    cursor: pointer;
-  }
-  
-  #gamePage {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-top: 2rem;
-  }
-  
-  #gameTitle {
-    font-size: 2rem;
-    font-weight: bold;
-    margin-bottom: 1rem;
-  }
-  
-  #gameScene, #gameImage {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: 1rem 0;
-    width: 100%;
-    height: 400px;
-    background-color: #f5f5f5;
-    border-radius: 0.25rem;
-  }
-  
-  #gameScene.loading, #gameImage.loading {
-    position: relative;
-  }
-  
-  #gameScene.loading::before, #gameImage.loading::before {
-    content: "";
-    position: absolute;
-    top: calc(50% - 25px);
-    left: calc(50% - 25px);
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    border: 3px solid #007bff;
-    border-top-color: #f5f5f5;
-    animation: loading 1s linear infinite;
-  }
-  
-  #gameImage img {
-    max-width: 100%;
-    max-height: 100%;
-    border-radius: 0.25rem;
-  }
-  
-  .spinner {
-    border: 16px solid #f3f3f3;
-    border-top: 16px solid #3498db;
-    border-radius: 50%;
-    width: 120px;
-    height: 120px;
-    animation: spin 2s linear infinite;
-  }
-  
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-  
+  font-family: Arial, sans-serif;
+  background-color: #f7f7f7;
+}
+
+h1 {
+  font-size: 2.5rem;
+  font-weight: bold;
+  text-align: center;
+  margin: 2rem 0;
+}
+
+p {
+  font-size: 1.5rem;
+  text-align: center;
+  margin: 1rem 0;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 2rem;
+}
+
+label {
+  font-size: 1.2rem;
+  margin: 1rem 0;
+}
+
+input[type="text"], input[type="radio"] {
+  font-size: 1.2rem;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  border: none;
+  margin: 0.5rem 0;
+}
+
+button {
+  font-size: 1.2rem;
+  font-weight: bold;
+  padding: 1rem;
+  border-radius: 0.25rem;
+  border: none;
+  margin-top: 1rem;
+  background-color: #007bff;
+  color: #fff;
+  cursor: pointer;
+}
+
+#gamePage {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  margin-top: 2rem;
+}
+
+#gameTitle {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+#gameScene, #gameImage {
+  margin: 1rem;
+  width: 50%;
+  height: 400px;
+  background-color: #f5f5f5;
+  border-radius: 0.25rem;
+}
+
+#gameContent {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  margin: 1rem 0;
+  width: 100%;
+}
+
+#gameScene.loading, #gameImage.loading {
+  position: relative;
+}
+
+#gameScene.loading::before, #gameImage.loading::before {
+  content: "";
+  position: absolute;
+  top: calc(50% - 25px);
+  left: calc(50% - 25px);
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 3px solid #007bff;
+  border-top-color: #f5f5f5;
+  animation: loading 1s linear infinite;
+}
+
+#gameImage img {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 0.25rem;
+}
+
+#gameScene {
+  word-wrap: break-word;
+  text-align: center;
+}
+
+.spinner {
+  border: 16px solid #f3f3f3;
+  border-top: 16px solid #3498db;
+  border-radius: 50%;
+  width: 120px;
+  height: 120px;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
