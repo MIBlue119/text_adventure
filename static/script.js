@@ -1,49 +1,3 @@
-// function startGame() {
-//     var openaiApiKey = document.getElementById("openai_api_key").value;
-//     var playerName = document.getElementById("playerName").value;
-//     var storySelect = document.getElementById("storySelect").value;
-    
-//     document.getElementById("gameTitle").textContent = "Welcome to the " + storySelect + " World, " + playerName + "!";
-//     document.getElementById("introPage").style.display = "none";
-//     document.getElementById("gamePage").style.display = "block";
-    
-//     var xhr = new XMLHttpRequest();
-//     xhr.open("POST", "/game/start", true);
-//     xhr.setRequestHeader("Content-Type", "application/json");
-//     xhr.setRequestHeader("OpenAI-Api-Key", openaiApiKey);
-//     xhr.onreadystatechange = function() {
-//       if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
-//         var response = JSON.parse(xhr.responseText);
-//         var gameSceneElement = document.getElementById("gameScene");
-//         gameSceneElement.innerHTML = "<p>" + response.scene + "</p>";
-//         var gameImageElement = document.getElementById("gameImage");
-//         gameImageElement.innerHTML = "<img src='" + response.image_url + "' alt='Game Image'>";
-//       }
-//     };
-//     xhr.send(JSON.stringify({"story": storySelect}));
-//   }
-  
-//   function submitCommand() {
-//     var openaiApiKey = document.getElementById("openai_api_key").value;
-//     var playerName = document.getElementById("playerName").value;
-//     var command = document.getElementById("command").value;
-    
-//     var xhr = new XMLHttpRequest();
-//     xhr.open("POST", "/game/command", true);
-//     xhr.setRequestHeader("Content-Type", "application/json");
-//     xhr.setRequestHeader("OpenAI-Api-Key", openaiApiKey);
-//     xhr.onreadystatechange = function() {
-//       if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
-//         var response = JSON.parse(xhr.responseText);
-//         var gameSceneElement = document.getElementById("gameScene");
-//         gameSceneElement.innerHTML = "<p>" + response.scene + "</p>";
-//         var gameImageElement = document.getElementById("gameImage");
-//         gameImageElement.innerHTML = "<img src='" + response.image_url + "' alt='Game Image'>";
-//       }
-//     };
-//     xhr.send(JSON.stringify({"command": command}));
-//   }
-  
 // DOM elements
 const introPage = document.getElementById("introPage");
 const gamePage = document.getElementById("gamePage");
@@ -62,9 +16,17 @@ let gameStory = "";
 const waitSpinner = `<div class="spinner"></div>`;
 
 // Event listener for intro page form
-document.querySelector("#introForm").addEventListener("submit", (event) => {
+document.querySelector("#introForm").addEventListener("submit", async (event) => {
   event.preventDefault();
-  const openaiApiKey = document.querySelector("#openaiApiKey").value;
+  openaiApiKey = document.querySelector("#openaiApiKey").value;
+
+  // Check if API key is valid
+  const api_key_valid = await checkApiKey();
+  if (!api_key_valid) {
+      alert("Please enter a valid OpenAI API key.");
+      return;
+  }
+  console.log(openaiApiKey);
   playerName = document.querySelector("#playerName").value;
   gameStory = document.querySelector('input[name="gameStory"]:checked').value;
   // Call API to generate game content
@@ -79,6 +41,49 @@ gameInput.addEventListener("submit", (event) => {
   updateGame(inputText);
 });
 
+
+// function checkApiKey(){
+//   // Call API to validate API key
+//   const response =  fetch("/api/check-api-key", {
+//     method: "POST",
+//     headers: {
+//       "Content-Type": "application/json",
+//     },
+//     body: JSON.stringify({
+//       api_key: openaiApiKey,
+//     }),
+//   });
+//   console.log(response);
+//   // const data =  response.json();
+//   // // Check if API key is valid
+//   // if (data.api_key_valid) {
+//   //   return true;
+//   // } else {
+//   //   return false;
+//   // }
+// }
+
+async function checkApiKey(){
+  // Call API to validate API key
+  const response =  await fetch("/api/check-api-key", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      api_key: openaiApiKey,
+    }),
+  });
+  const data =  await response.json();
+  console.log(data);
+  // Check if API key is valid
+  if (data.api_key_valid) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
 // Function to show game page
 function showGamePage() {
   // Update game title
@@ -87,6 +92,7 @@ function showGamePage() {
   introPage.style.display = "none";
   gamePage.style.display = "block";
   // Call API to generate game content
+  console.log("Start to generate game content")
   generateGameContent();
 }
 
@@ -110,6 +116,28 @@ async function generateGameContent() {
   updateGameScene(data.game_scene);
   updateGameImage(data.game_image);
 }
+async function generateGameContent() {
+  // Show wait spinner
+  gameScene.innerHTML = waitSpinner;
+  // Call API to generate game content
+  const response = await fetch("/api/game-content", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      api_key: openaiApiKey,
+      game_story: gameStory,
+    }),
+  });
+  const data = await response.json();
+  // // Hide wait spinner
+  gameScene.innerHTML = data.game_scene;
+  // // Show wait spinner
+  // gameScene.innerHTML = waitSpinner;
+  // Update game image
+  updateGameImage(data.game_image);
+}
 
 // Function to update game scene
 function updateGameScene(gameSceneContent) {
@@ -128,7 +156,7 @@ function updateGameImage(gameImageUrl) {
 // Function to update game
 async function updateGame(inputText) {
   // Show wait spinner
-  gameScene.innerHTML = waitSpinner;
+  //gameScene.innerHTML = waitSpinner;
   // Call API to update game
   const response = await fetch("/api/update-game", {
     method: "POST",

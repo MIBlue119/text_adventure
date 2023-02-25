@@ -4,6 +4,9 @@
     <meta charset="utf-8">
     <title>OpenAI GPT-3 and DALL-E 2 Text Adventure Game</title>
     <link rel="stylesheet" href="static/style.css">
+    <script>
+      var openaiApiKey = "YOUR_OPENAI_API_KEY";
+    </script>
   </head>
   <body>
     <div id="introPage">
@@ -15,9 +18,9 @@
         <label for="playerName">Player Name:</label>
         <input type="text" id="playerName" name="playerName" required value="Player"><br><br>
         <label>Game Story:</label><br>
-        <label for="gameStory1"><input type="radio" id="gameStory1" name="gameStory" value="fantasy" checked>Fantasy World</label><br>
-        <label for="gameStory2"><input type="radio" id="gameStory2" name="gameStory" value="western">Western Frontier</label><br>
-        <label for="gameStory3"><input type="radio" id="gameStory3" name="gameStory" value="ww2">World War II</label><br><br>
+        <label for="gameStory1"><input type="radio" id="gameStory1" name="gameStory" value="宇宙迷航" checked>宇宙迷航</label><br>
+        <label for="gameStory2"><input type="radio" id="gameStory2" name="gameStory" value="哈利波特魔法世界">哈利波特魔法世界</label><br>
+        <label for="gameStory3"><input type="radio" id="gameStory3" name="gameStory" value="第二次世界大戰">第二次世界大戰</label><br><br>
         <button type="submit">Start Game</button>
       </form>
     </div>
