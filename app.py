@@ -22,7 +22,8 @@ def index():
 main_game_scene= None
 last_game_scene = None
 
-TEXT_ENGINE = "text-curie-001"
+#TEXT_ENGINE = "text-curie-001"
+TEXT_ENGINE = "text-davinci-003"
 IS_TRANSLATE = False
 
 @app.route("/api/check-api-key", methods=["POST"])
@@ -35,7 +36,7 @@ def check_api_key():
     try:
         # Check OpenAI by calling the OpenAI API
         response =openai.Completion.create(
-            engine="text-curie-001",
+            engine=TEXT_ENGINE,
             prompt="This",
             max_tokens=2,
             n=1,
@@ -119,7 +120,7 @@ def generate_game_scene(game_story):
     prompt_of_game_story = "Start a text adventure game, and describe the game scene." + ". Players determine the actions to take. Please describe in detail all the items/creatures in the scene. If characters in the scene have dialogue with the protagonist, please output the dialogue in its entirety. If the protagonist interacts with any creatures in the scene, please describe the interaction process. Do not repeat scenes or dialogue. The story should be full of twists and turns and climactic moments. " + "At the start of the game, please provide a detailed description of the story scene and provide several identities for the player to choose from. " + "After each narration, please explain the player's life value and true energy value. If the player's life value reaches zero, they will die, and if the true energy value reaches zero, they will not be able to use spells." +SUFFIX_PROMPT
     print("\n Prompt of game_story: ", prompt_of_game_story)
     response = openai.Completion.create(
-        engine="text-curie-001",
+        engine=TEXT_ENGINE,
         #engine="text-davinci-003",
         prompt=prompt_of_game_story,
         max_tokens=1024,
@@ -139,7 +140,7 @@ def generate_dalle2_prompt(game_scene):
     if game_scene_tokens > 100:
         summarize_prompt = "Summarize this for a second-grade student in 500 words:\n"+"----------------------\n"+ f"{game_scene}"+"\n"+"----------------------\n"
         response = openai.Completion.create(
-            engine="text-curie-001",
+            engine=TEXT_ENGINE,
             prompt=summarize_prompt,
             max_tokens=1024,
             n=1,
@@ -153,7 +154,7 @@ def generate_dalle2_prompt(game_scene):
 
         print(f"\n Start generating Midjourney's prompt: {prompt}")
         response = openai.Completion.create(
-            engine="text-curie-001",
+            engine=TEXT_ENGINE,
             prompt=prompt,
             max_tokens=1024,
             n=1,
@@ -196,7 +197,7 @@ def update_game_scene(last_game_scene, player_input):
     
     print("\n Updated game scene prompt: ", updated_game_scene_prompt)
     response = openai.Completion.create(
-        engine="text-curie-001",
+        engine=TEXT_ENGINE,
         prompt=updated_game_scene_prompt,
         max_tokens=1024,
         n=1,
