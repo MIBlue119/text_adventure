@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>OpenAI GPT-3 and DALL-E 2 Text Adventure Game</title>
+    <link rel="stylesheet" href="static/style.css">
+  </head>
+  <body>
+    <div id="introPage">
+      <h1>Welcome to the OpenAI GPT-3 and DALL-E 2 Text Adventure Game</h1>
+      <p>Please enter your OpenAI API key and select a game story to begin:</p>
+      <form id="introForm">
+        <label for="openaiApiKey">OpenAI API Key:</label>
+        <input type="text" id="openaiApiKey" name="openaiApiKey" required><br><br>
+        <label for="playerName">Player Name:</label>
+        <input type="text" id="playerName" name="playerName" required value="Player"><br><br>
+        <label>Game Story:</label><br>
+        <label for="gameStory1"><input type="radio" id="gameStory1" name="gameStory" value="fantasy" checked>Fantasy World</label><br>
+        <label for="gameStory2"><input type="radio" id="gameStory2" name="gameStory" value="western">Western Frontier</label><br>
+        <label for="gameStory3"><input type="radio" id="gameStory3" name="gameStory" value="ww2">World War II</label><br><br>
+        <button type="submit">Start Game</button>
+      </form>
+    </div>
+
+    <div id="gamePage" style="display:none">
+      <h1 id="gameTitle"></h1>
+      <div id="gameScene"></div>
+      <div id="gameImage"></div>
+      <form id="gameInput">
+        <input type="text" id="gameInputText" name="gameInputText" required>
+        <button type="submit">Send</button>
+      </form>
+    </div>
+
+    <script src="static/script.js"></script>
+  </body>
+</html>
