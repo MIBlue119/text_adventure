@@ -27,8 +27,8 @@ document.querySelector("#introForm").addEventListener("submit", async (event) =>
       return;
   }
   console.log(openaiApiKey);
-  playerName = document.querySelector("#playerName").value;
-  gameStory = document.querySelector('input[name="gameStory"]:checked').value;
+  // playerName = document.querySelector("#playerName").value;
+  // gameStory = document.querySelector('input[name="gameStory"]:checked').value;
   // Call API to generate game content
   showGamePage();
 });
@@ -42,26 +42,6 @@ gameInput.addEventListener("submit", (event) => {
 });
 
 
-// function checkApiKey(){
-//   // Call API to validate API key
-//   const response =  fetch("/api/check-api-key", {
-//     method: "POST",
-//     headers: {
-//       "Content-Type": "application/json",
-//     },
-//     body: JSON.stringify({
-//       api_key: openaiApiKey,
-//     }),
-//   });
-//   console.log(response);
-//   // const data =  response.json();
-//   // // Check if API key is valid
-//   // if (data.api_key_valid) {
-//   //   return true;
-//   // } else {
-//   //   return false;
-//   // }
-// }
 
 async function checkApiKey(){
   // Call API to validate API key

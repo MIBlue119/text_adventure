@@ -104,8 +104,8 @@ button {
 }
 
 #gameScene {
-  word-wrap: break-word;
-  text-align: center;
+  font-size: 20px;
+  white-space: pre-wrap;
 }
 
 .spinner {
