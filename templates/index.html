@@ -17,12 +17,13 @@
         <input type="text" id="openaiApiKey" name="openaiApiKey" required><br><br>
         <label for="playerName">Player Name:</label>
         <input type="text" id="playerName" name="playerName" required value="Player"><br><br>
-        <!-- <label>Game Story:</label><br>
-        <label for="gameStory1"><input type="radio" id="gameStory1" name="gameStory" value="Space Trek" checked>Space Trek</label><br>
+        <label>Game Story:</label><br>
+        <label for="gameStory1"><input type="radio" id="gameStory1" name="gameStory" value="新世紀福音戰士" checked>新世紀福音戰士</label><br>
         <label for="gameStory2"><input type="radio" id="gameStory2" name="gameStory" value="Wizarding World of Harry Potter">Wizarding World of Harry Potter</label><br>
-        <label for="gameStory3"><input type="radio" id="gameStory3" name="gameStory" value="Iron Man">Iron Man</label><br><br>
-        <label for="gameStory4"><input type="radio" id="gameStory4" name="gameStory" value="Nausicaä of the Valley of the Wind">Nausicaä of the Valley of the Wind</label><br><br>        
-        <label for="gameStory5"><input type="radio" id="gameStory5" name="gameStory" value="Castle in the Sky">Castle in the Sky</label><br><br>          -->
+        <label for="gameStory3"><input type="radio" id="gameStory3" name="gameStory" value="戀愛養成遊戲">戀愛養成遊戲</label><br><br>
+        <label for="gameStory4"><input type="radio" id="gameStory4" name="gameStory" value="在東京上班的日子裡">在東京上班的日子裡</label><br><br>        
+        <label for="gameStory5"><input type="radio" id="gameStory5" name="gameStory" value="跟蘋果公司的賈伯斯一起在台北打造AI軟體公司">跟蘋果公司的賈伯斯一起在台北打造AI軟體公司</label><br><br>   
+        <label for="gameStory6"><input type="radio" id="gameStory6" name="gameStory" value="Random">Random</label><br><br>         
        
         <button type="submit">Start Game</button>
       </form>
@@ -32,7 +33,9 @@
       <h1 id="gameTitle"></h1>
       <div id="gameContent">
         <div id="gameScene"></div>
-        <div id="gameImage"></div>
+        <div id="gameImageRow">
+          <div id="gameImage"></div>
+        </div>
       </div>
       
       <form id="gameInput">

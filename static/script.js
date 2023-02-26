@@ -28,7 +28,7 @@ document.querySelector("#introForm").addEventListener("submit", async (event) =>
   }
   console.log(openaiApiKey);
   // playerName = document.querySelector("#playerName").value;
-  // gameStory = document.querySelector('input[name="gameStory"]:checked').value;
+  gameStory = document.querySelector('input[name="gameStory"]:checked').value;
   // Call API to generate game content
   showGamePage();
 });
