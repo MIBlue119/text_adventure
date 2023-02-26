@@ -76,8 +76,8 @@ class GamePrompter:
             "zh-tw": "\n這是玩家的新決定或想法："
         }
         SUFFIX_PROMPT = {
-            "en": "\nGenerate the next game scene to let player interation with it.",
-            "zh-tw": "\n生成下一個遊戲場景，讓玩家與之互動。"
+            "en": "\nGenerate the next game scene to let player interation with it and provide three choices for the player.",
+            "zh-tw": "\n生成下一個遊戲場景，讓玩家與之互動，並為玩家提供三個選擇。"
         }
 
         if main_game_scene == last_game_scene:
