@@ -1,6 +1,21 @@
 """This module contains the Prompter class, which is used to prompt the user for game information.
 """
 
+_game_prompter_instance = None
+def get_game_prompter_instance(language:str="en"):
+    """Get the game prompter.
+    
+    Args:
+        language (str, optional): The language of the prompter. Defaults to "en".
+        Currently only "en" and "zh-tw" are supported.
+    """
+    if language not in ["en", "zh-tw"]:
+        raise ValueError(f"Language {language} is not supported.")
+    global _game_prompter_instance 
+    if _game_prompter_instance is None:
+        _game_prompter_instance = GamePrompter(language)
+    return _game_prompter_instance
+
 class GamePrompter:
     def __init__(self, language: str = "en"):
         self.language = language
@@ -73,5 +88,3 @@ class GamePrompter:
 
         return prompt
 
-
-        

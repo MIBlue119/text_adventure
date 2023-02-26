@@ -7,7 +7,7 @@ from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from openai.error import AuthenticationError
 from utils import ( language_translate, calculate_tokens_from_text)
-
+from prompter import get_game_prompter_instance
 # Initialize Flask app
 app = Flask(__name__, static_folder='static', template_folder='templates')
 CORS(app)
@@ -25,6 +25,10 @@ last_game_scene = None
 #TEXT_ENGINE = "text-curie-001"
 TEXT_ENGINE = "text-davinci-003"
 IS_TRANSLATE = False
+
+#LANGUAGE = "en"
+LANGUAGE = "zh-tw"
+prompter = get_game_prompter_instance(LANGUAGE)
 
 @app.route("/api/check-api-key", methods=["POST"])
 def check_api_key():
@@ -72,7 +76,7 @@ def generate_game_content():
         translated_game_scene = language_translate(input_text = main_game_scene)
     else:
         translated_game_scene = main_game_scene
-    print(f"\n Translated game_scene: {translated_game_scene}")
+    # print(f"\n Translated game_scene: {translated_game_scene}")
     # Return game content
     return jsonify({"game_scene": translated_game_scene, "game_image": game_image})
 
@@ -113,11 +117,7 @@ def generate_game_scene(game_story):
     """Generate game scene using OpenAI GPT-3."""
     # Generate game scene using OpenAI GPT-3
     print(f"\n Start generating game_story...: {game_story}")
-    #prompt_of_game_story = "開始一個主題為"+f" {game_story} "+"的文字冒險遊戲" +". 由玩家來決定要採取的動作。請詳細描述場景中所有的物品/生物，如果場景中的人物在對話或跟主角對話，請把對話內容完整輸出來,"+"如果主角和場景中的任何生物互動，請把互動過程描述出來，不要重現重複的場景或對話，故事要曲折離奇/高潮迭起。"+"遊戲開始時，請詳述故事場景，並提供數個身份給玩家選擇。"+"每次你做完敘述後，要說明玩家的生命值和真氣值，生命值歸零玩家就死亡，真氣值歸零就無法使用法術。" +"現在遊戲開始。"
-    #prompt_of_game_story = "Start a text adventure game with the theme of " + f"{game_story}" + ". Players determine the actions to take. Please describe in detail all the items/creatures in the scene. If characters in the scene have dialogue with the protagonist, please output the dialogue in its entirety. If the protagonist interacts with any creatures in the scene, please describe the interaction process. Do not repeat scenes or dialogue. The story should be full of twists and turns and climactic moments. " + "At the start of the game, please provide a detailed description of the story scene and provide several identities for the player to choose from. " + "After each narration, please explain the player's life value and true energy value. If the player's life value reaches zero, they will die, and if the true energy value reaches zero, they will not be able to use spells. " + "The game starts now."
-    #prompt_of_game_story = "Start a text adventure game, and describe the game scene." + ". Players determine the actions to take. Please describe in detail all the items/creatures in the scene. If characters in the scene have dialogue with the protagonist, please output the dialogue in its entirety. If the protagonist interacts with any creatures in the scene, please describe the interaction process. Do not repeat scenes or dialogue. The story should be full of twists and turns and climactic moments. " + "At the start of the game, please provide a detailed description of the story scene and provide several identities for the player to choose from. " + "After each narration, please explain the player's life value and true energy value. If the player's life value reaches zero, they will die, and if the true energy value reaches zero, they will not be able to use spells." + "The game starts now."
-    SUFFIX_PROMPT = "\n Generate the game scene to let player interation with it."
-    prompt_of_game_story = "Start a text adventure game, and describe the game scene." + ". Players determine the actions to take. Please describe in detail all the items/creatures in the scene. If characters in the scene have dialogue with the protagonist, please output the dialogue in its entirety. If the protagonist interacts with any creatures in the scene, please describe the interaction process. Do not repeat scenes or dialogue. The story should be full of twists and turns and climactic moments. " + "At the start of the game, please provide a detailed description of the story scene and provide several identities for the player to choose from. " + "After each narration, please explain the player's life value and true energy value. If the player's life value reaches zero, they will die, and if the true energy value reaches zero, they will not be able to use spells." +SUFFIX_PROMPT
+    prompt_of_game_story = prompter.generate_game_scene()
     print("\n Prompt of game_story: ", prompt_of_game_story)
     response = openai.Completion.create(
         engine=TEXT_ENGINE,
@@ -138,7 +138,7 @@ def generate_dalle2_prompt(game_scene):
     print(f"/n Start summarizing game_scene for DALLE-2: {game_scene}")
     game_scene_tokens = calculate_tokens_from_text(game_scene)
     if game_scene_tokens > 100:
-        summarize_prompt = "Summarize this for a second-grade student in 500 words:\n"+"----------------------\n"+ f"{game_scene}"+"\n"+"----------------------\n"
+        summarize_prompt = prompter.summarize_game_scene(game_scene)
         response = openai.Completion.create(
             engine=TEXT_ENGINE,
             prompt=summarize_prompt,
@@ -150,12 +150,12 @@ def generate_dalle2_prompt(game_scene):
         summarized_game_scene = response.choices[0].text.strip()
         # Generate DALLE2 prompt
         print(f"\n Start generating DALLE2 prompt with summarized game thene...: {summarized_game_scene}")    
-        prompt = "Generate Midjourney's prompt according to this story:\n"+f"{summarized_game_scene}"
+        text2image_prompt =prompter.generate_text2image_prompt(summarized_game_scene)
 
-        print(f"\n Start generating Midjourney's prompt: {prompt}")
+        print(f"\n Start generating Midjourney's prompt: {text2image_prompt}")
         response = openai.Completion.create(
             engine=TEXT_ENGINE,
-            prompt=prompt,
+            prompt=text2image_prompt,
             max_tokens=1024,
             n=1,
             stop=None,
@@ -187,14 +187,11 @@ def update_game_scene(last_game_scene, player_input):
     #print(f"\n Start updating game scene...: {game_scene}, {player_input}")
     global main_game_scene
 
-    APPEND_PROMPT = "Provide detailed descriptions of all items/creatures in the scene, and if any characters in the scene are talking to the protagonist or conversing with other characters."
-    PREFIX_PROMPT_PLAYER_INPUT = "\nHere is the player's new decision or thoughts: "
-    SUFFIX_PROMPT_PLAYER_INPUT = "\nGenerate the next game scene to let player interation with it."
-    if main_game_scene == last_game_scene:
-        updated_game_scene_prompt = f"A text adventure game with the scene: {main_game_scene}\n" +APPEND_PROMPT +"\n"+ PREFIX_PROMPT_PLAYER_INPUT+ f"{player_input}"+ SUFFIX_PROMPT_PLAYER_INPUT
-    elif main_game_scene != last_game_scene:
-        updated_game_scene_prompt = f"A text adventure game with the scene: {main_game_scene}\n {last_game_scene} \n" +PREFIX_PROMPT_PLAYER_INPUT+ f"{player_input}"+ SUFFIX_PROMPT_PLAYER_INPUT
-    
+    updated_game_scene_prompt = prompter.update_game_scene(
+        main_game_scene = main_game_scene,
+        last_game_scene = last_game_scene,
+        player_input = player_input
+    )
     print("\n Updated game scene prompt: ", updated_game_scene_prompt)
     response = openai.Completion.create(
         engine=TEXT_ENGINE,
