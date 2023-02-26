@@ -20,6 +20,7 @@ def index():
     return render_template("index.html")
 
 main_game_scene= None
+character_choices = None
 last_game_scene = None
 
 #TEXT_ENGINE = "text-curie-001"
@@ -66,19 +67,21 @@ def generate_game_content():
     # Generate game content using OpenAI GPT-3 and DALL-E 2
     global main_game_scene
     global last_game_scene
+    global character_choices
     main_game_scene = generate_game_scene(game_story)
+    # Generate character choices using OpenAI GPT-3
+    character_choices = generate_character_choices(main_game_scene)    
     # Generate DALL-E 2 prompt
     dalle2_prompt = generate_dalle2_prompt(main_game_scene)
     game_image = generate_game_image(dalle2_prompt)
     # Update last game scene
-    last_game_scene = main_game_scene
-    if IS_TRANSLATE == True:
-        translated_game_scene = language_translate(input_text = main_game_scene)
-    else:
-        translated_game_scene = main_game_scene
-    # print(f"\n Translated game_scene: {translated_game_scene}")
+    character_choices_selecction_prefix = {
+        "en": "Select a character to play as: ",
+        "zh-tw": "選擇一個角色來玩: ",
+    }
+    last_game_scene = main_game_scene +"\n"+f"{character_choices_selecction_prefix[LANGUAGE]}"+ character_choices
     # Return game content
-    return jsonify({"game_scene": translated_game_scene, "game_image": game_image})
+    return jsonify({"game_scene": last_game_scene , "game_image": game_image})
 
 
 @app.route("/api/update-game", methods=["POST"])
@@ -104,13 +107,9 @@ def update_game():
     game_image = update_game_image(dalle2_prompt, game_image)
     # Update last game scene
     last_game_scene = game_scene
-    if IS_TRANSLATE == True:
-        translated_game_scene = language_translate(input_text = game_scene, dest = "zh-tw")
-    else:
-        translated_game_scene = game_scene
-    print(f"\n Translated game_scene: {translated_game_scene}")    
+
     # Return updated game content
-    return jsonify({"game_scene": translated_game_scene, "game_image": game_image})
+    return jsonify({"game_scene": last_game_scene, "game_image": game_image})
 
 
 def generate_game_scene(game_story):
@@ -132,38 +131,56 @@ def generate_game_scene(game_story):
     print(f"\n Generated game_scene: {game_scene}")
     return game_scene
 
+def generate_character_choices(game_scene):
+    """Generate character choices using OpenAI GPT-3."""
+    print(f"\n Start generating character_choices...: {game_scene}")
+    prompt_of_character_choices = prompter.generate_character_choices_prompt(game_scene)
+    print("\n Prompt of character_choices: ", prompt_of_character_choices)
+    response = openai.Completion.create(
+        engine=TEXT_ENGINE,
+        prompt=prompt_of_character_choices,
+        max_tokens=1024,
+        n=1,
+        stop=None,
+        temperature=0.5,
+    )
+    character_choices = response.choices[0].text.strip()
+    print(f"\n Generated character_choices: {character_choices}")
+    return character_choices
+
 def generate_dalle2_prompt(game_scene):
     """Generate DALL-E 2 prompt."""
     # Call the api to summarize the game scene first
-    print(f"/n Start summarizing game_scene for DALLE-2: {game_scene}")
-    game_scene_tokens = calculate_tokens_from_text(game_scene)
-    if game_scene_tokens > 100:
-        summarize_prompt = prompter.summarize_game_scene(game_scene)
-        response = openai.Completion.create(
-            engine=TEXT_ENGINE,
-            prompt=summarize_prompt,
-            max_tokens=1024,
-            n=1,
-            stop=None,
-            temperature=0.5,
-        )
-        summarized_game_scene = response.choices[0].text.strip()
-        # Generate DALLE2 prompt
-        print(f"\n Start generating DALLE2 prompt with summarized game thene...: {summarized_game_scene}")    
-        text2image_prompt =prompter.generate_text2image_prompt(summarized_game_scene)
+    # print(f"/n Start summarizing game_scene for DALLE-2: {game_scene}")
+    # game_scene_tokens = calculate_tokens_from_text(game_scene)
+    # if game_scene_tokens > 100:
+    #     summarize_prompt = prompter.summarize_game_scene(game_scene)
+    #     response = openai.Completion.create(
+    #         engine=TEXT_ENGINE,
+    #         prompt=summarize_prompt,
+    #         max_tokens=1024,
+    #         n=1,
+    #         stop=None,
+    #         temperature=0.5,
+    #     )
+    #     summarized_game_scene = response.choices[0].text.strip()
+    #     # Generate DALLE2 prompt
+    #     print(f"\n Start generating DALLE2 prompt with summarized game thene...: {summarized_game_scene}")    
+    #     text2image_prompt =prompter.generate_text2image_prompt(summarized_game_scene)
 
-        print(f"\n Start generating Midjourney's prompt: {text2image_prompt}")
-        response = openai.Completion.create(
-            engine=TEXT_ENGINE,
-            prompt=text2image_prompt,
-            max_tokens=1024,
-            n=1,
-            stop=None,
-            temperature=0.5,
-        )
-        dalle2_prompt = response.choices[0].text.strip()
-    else:
-        dalle2_prompt = game_scene
+    #     print(f"\n Start generating Midjourney's prompt: {text2image_prompt}")
+    #     response = openai.Completion.create(
+    #         engine=TEXT_ENGINE,
+    #         prompt=text2image_prompt,
+    #         max_tokens=1024,
+    #         n=1,
+    #         stop=None,
+    #         temperature=0.5,
+    #     )
+    #     dalle2_prompt = response.choices[0].text.strip()
+    # else:
+    #     dalle2_prompt = game_scene
+    dalle2_prompt = game_scene
     print(f"\n Generated DALLE2 prompt: {dalle2_prompt}")
     return dalle2_prompt
 

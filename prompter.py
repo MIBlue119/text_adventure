@@ -23,22 +23,39 @@ class GamePrompter:
     def generate_game_scene(self):
         """Generate a game scene."""
         MAIN_PROMPT ={
-            "en": "Start a text adventure game, and describe the game scene." + ". Players determine the actions to take. Please describe in detail all the items/creatures in the scene. If characters in the scene have dialogue with the protagonist, please output the dialogue in its entirety. If the protagonist interacts with any creatures in the scene, please describe the interaction process. Do not repeat scenes or dialogue. The story should be full of twists and turns and climactic moments. " + "At the start of the game, please provide a detailed description of the story scene and provide several identities for the player to choose from. " + "After each narration, please explain the player's life value and true energy value. If the player's life value reaches zero, they will die, and if the true energy value reaches zero, they will not be able to use spells.",
-            "zh-tw": "開始一個文字冒險遊戲，並描述遊戲場景。玩家決定要做什麼。請詳細描述場景中所有物品/生物。如果場景中的角色與主角對話，請輸出對話的全部內容。如果主角與場景中的任何生物互動，請描述互動過程。不要重複場景或對話。故事應充滿曲折和激動人心的時刻。遊戲開始時，請提供故事場景的詳細描述，並提供幾個供玩家選擇的身份。每次叙述後，請說明玩家的生命值和真氣值。如果玩家的生命值為零，他們將死亡，如果真氣值為零，他們將無法使用法術。"
-        }
+            "en": "Start a text adventure game, and describe the game scene." + ". Players determine the actions to take. Please describe in detail all the items/creatures in the scene. If characters in the scene have dialogue with the protagonist, please output the dialogue in its entirety. If the protagonist interacts with any creatures in the scene, please describe the interaction process. Do not repeat scenes or dialogue. The story should be full of twists and turns and climactic moments. Please provide a detailed description of the story scene" + "After each narration, please explain the player's life value and true energy value. If the player's life value reaches zero, they will die, and if the true energy value reaches zero, they will not be able to use spells.",
+            "zh-tw": "開始一個文字冒險遊戲，並描述遊戲場景。玩家決定要做什麼。請詳細描述場景中所有物品/生物。如果場景中的角色與主角對話，請輸出對話的全部內容。如果主角與場景中的任何生物互動，請描述互動過程。不要重複場景或對話。故事應充滿曲折和激動人心的時刻。遊戲開始時，請提供故事場景的詳細描述。每次叙述後，請說明玩家的生命值和真氣值。如果玩家的生命值為零，他們將死亡，如果真氣值為零，他們將無法使用法術。"
+        }        
         SUFFIX_PROMPT = {
             "en": "\nGenerate the game scene to let player interation with it.",
             "zh-tw": "\n生成遊戲場景，讓玩家與之互動。"
         }
         return MAIN_PROMPT[self.language] + SUFFIX_PROMPT[self.language]
     
+    def generate_character_choices_prompt(self, scene):
+        MAIN_PROMPT= {
+            "en":  "Provide several identities for the player to choose from according to the following game scene:\n",
+            "zh-tw": "根據以下遊戲場景，提供幾個供玩家選擇的身份：\n"
+        }
+        return MAIN_PROMPT[self.language] + scene
+
+
+    def generate_game_scene_choices(self, scene):
+        """Generate choices for the game scene."""
+        MAIN_PROMPT = {
+            "en": "Generate choices for the player according to the follow game scene:\n",
+            "zh-tw": "根據以下遊戲場景，生成選項供玩家選擇：\n"
+        }
+        prompt = MAIN_PROMPT[self.language] + scene
+        return prompt
+
     def summarize_game_scene(self, text):
         """
         Summarize the game scene.
         """
         MAIN_PROMPT = {
-            "en": "Summarize this under 500 words:\n",
-            "zh-tw": "將此摘要為500字以內：\n"
+            "en": "Summarize following game scene under 500 words and don't add other description:\n",
+            "zh-tw": "將以下遊戲場景總結在500字內，並且不要添加其他描述：\n"
         }
         return MAIN_PROMPT[self.language] + text
     
@@ -80,8 +97,8 @@ class GamePrompter:
             "zh-tw": "\n生成下一個遊戲場景，讓玩家與之互動，並為玩家提供三個選擇。"
         }
 
-        if main_game_scene == last_game_scene:
-            prompt = START_PROMPT[self.language] + main_game_scene + INTER_PROMPT[self.language] + player_input + SUFFIX_PROMPT[self.language]
+        if main_game_scene in  last_game_scene:
+            prompt = START_PROMPT[self.language] + last_game_scene + INTER_PROMPT[self.language] + player_input + SUFFIX_PROMPT[self.language]
             
         else:
             prompt = START_PROMPT[self.language] + main_game_scene +"\n" + last_game_scene + "\n" +  INTER_PROMPT[self.language] + player_input + SUFFIX_PROMPT[self.language]
