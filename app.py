@@ -26,10 +26,13 @@ last_game_scene = None
 #TEXT_ENGINE = "text-curie-001"
 TEXT_ENGINE = "text-davinci-003"
 IS_TRANSLATE = False
+TEXT_ENGINE_TEMPERATURE = 0.8
 
 #LANGUAGE = "en"
 LANGUAGE = "zh-tw"
 prompter = get_game_prompter_instance(LANGUAGE)
+
+previous_game_scenes = []
 
 @app.route("/api/check-api-key", methods=["POST"])
 def check_api_key():
@@ -77,7 +80,7 @@ def generate_game_content():
     # Update last game scene
     character_choices_selecction_prefix = {
         "en": "Select a character to play as: ",
-        "zh-tw": "選擇一個角色來玩: ",
+        "zh-tw": "選擇一個角色來玩:\n",
     }
     last_game_scene = main_game_scene +"\n"+f"{character_choices_selecction_prefix[LANGUAGE]}"+ character_choices
     # Return game content
@@ -91,6 +94,7 @@ def update_game():
     api_key = request.json["api_key"]
     game_story = request.json["game_story"]
     global last_game_scene
+    global previous_game_scenes
     game_scene = last_game_scene #request.json["game_scene"]
     game_image = request.json["game_image"]
     player_input = request.json["player_input"]
@@ -101,13 +105,24 @@ def update_game():
     print(f"game_scene: {game_scene}")
     print(f"player_input: {player_input}")
     # Update game using OpenAI GPT-3 and DALL-E 2
-    game_scene = update_game_scene(game_scene, player_input)
+    game_scene = update_game_scene_with_previous(previous_game_scenes, game_scene, player_input)
     # Generate DALL-E 2 prompt
     dalle2_prompt = generate_dalle2_prompt(game_scene)
     game_image = update_game_image(dalle2_prompt, game_image)
+
+    # Update previous game scenes
+    INTER_PROMPT = {
+            "en": "\nHere is the player's decision or thoughts:",
+            "zh-tw": "\n這是玩家的決定或想法："
+    }
+    new_previous_game_scene = last_game_scene+f"{INTER_PROMPT[LANGUAGE]}"+player_input+"\n"
+    compressed_game_scene = compress_game_scene(new_previous_game_scene, max_token=500) 
+    previous_game_scenes.append(compressed_game_scene)
+    if len(previous_game_scenes) >=6:
+        previous_game_scenes.pop(0)
+
     # Update last game scene
     last_game_scene = game_scene
-
     # Return updated game content
     return jsonify({"game_scene": last_game_scene, "game_image": game_image})
 
@@ -116,7 +131,7 @@ def generate_game_scene(game_story):
     """Generate game scene using OpenAI GPT-3."""
     # Generate game scene using OpenAI GPT-3
     print(f"\n Start generating game_story...: {game_story}")
-    prompt_of_game_story = prompter.generate_game_scene()
+    prompt_of_game_story = prompter.generate_game_scene(game_story)
     print("\n Prompt of game_story: ", prompt_of_game_story)
     response = openai.Completion.create(
         engine=TEXT_ENGINE,
@@ -125,7 +140,7 @@ def generate_game_scene(game_story):
         max_tokens=1024,
         n=1,
         stop=None,
-        temperature=0.5,
+        temperature=TEXT_ENGINE_TEMPERATURE,
     )
     game_scene = response.choices[0].text.strip()
     print(f"\n Generated game_scene: {game_scene}")
@@ -142,11 +157,31 @@ def generate_character_choices(game_scene):
         max_tokens=1024,
         n=1,
         stop=None,
-        temperature=0.5,
+        temperature=TEXT_ENGINE_TEMPERATURE,
     )
     character_choices = response.choices[0].text.strip()
     print(f"\n Generated character_choices: {character_choices}")
     return character_choices
+
+def compress_game_scene(game_scene, max_token):
+    """Compress game scens using OpenAI GPT-3."""
+    print(f"#############################\n")
+    print(f"\n Start compressing game_scene...: {game_scene}")
+    prompt_of_compress_game_scene = prompter.compress_game_scene(game_scene)
+    #print("\n Prompt of compress_game_scene: ", prompt_of_compress_game_scene)
+    response = openai.Completion.create(
+        engine=TEXT_ENGINE,
+        prompt=prompt_of_compress_game_scene,
+        max_tokens=max_token,
+        n=1,
+        stop=None,
+        temperature=0.5,
+    )
+    compressed_game_scene = response.choices[0].text.strip()
+    print(f"\n Compressed game_scene: {compressed_game_scene}")
+    print(f"#############################\n")    
+    return compressed_game_scene
+
 
 def generate_dalle2_prompt(game_scene):
     """Generate DALL-E 2 prompt."""
@@ -199,24 +234,46 @@ def generate_game_image(game_scene):
     return game_image
 
 # Function to update game scene
-def update_game_scene(last_game_scene, player_input):
+# def update_game_scene(last_game_scene, player_input):
+#     # Update game scene using OpenAI GPT-3
+#     #print(f"\n Start updating game scene...: {game_scene}, {player_input}")
+#     global main_game_scene
+
+#     updated_game_scene_prompt = prompter.update_game_scene(
+#         main_game_scene = main_game_scene,
+#         last_game_scene = last_game_scene,
+#         player_input = player_input
+#     )
+#     print("\n Updated game scene prompt: ", updated_game_scene_prompt)
+#     response = openai.Completion.create(
+#         engine=TEXT_ENGINE,
+#         prompt=updated_game_scene_prompt,
+#         max_tokens=1024,
+#         n=1,
+#         stop=None,
+#         temperature=0.5,
+#     )
+#     updated_game_scene = response.choices[0].text.strip()
+#     print("\n Updated game scene: ", updated_game_scene)
+#     return updated_game_scene
+
+def update_game_scene_with_previous(previous_game_scenes, last_game_scene, player_input):
     # Update game scene using OpenAI GPT-3
     #print(f"\n Start updating game scene...: {game_scene}, {player_input}")
-    global main_game_scene
-
-    updated_game_scene_prompt = prompter.update_game_scene(
-        main_game_scene = main_game_scene,
+    updated_game_scene_prompt = prompter.update_game_scene_with_previous(
+        previous_game_scenes = previous_game_scenes,
         last_game_scene = last_game_scene,
         player_input = player_input
     )
-    print("\n Updated game scene prompt: ", updated_game_scene_prompt)
+    print("\n ###########Updated game scene prompt#######\n")
+    print(updated_game_scene_prompt)
     response = openai.Completion.create(
         engine=TEXT_ENGINE,
         prompt=updated_game_scene_prompt,
         max_tokens=1024,
         n=1,
         stop=None,
-        temperature=0.5,
+        temperature=TEXT_ENGINE_TEMPERATURE,
     )
     updated_game_scene = response.choices[0].text.strip()
     print("\n Updated game scene: ", updated_game_scene)
