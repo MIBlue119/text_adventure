@@ -43,8 +43,8 @@ class GamePrompter:
     def generate_game_scene_choices(self, scene):
         """Generate choices for the game scene."""
         MAIN_PROMPT = {
-            "en": "Generate choices for the player according to the follow game scene:\n",
-            "zh-tw": "根據以下遊戲場景，生成選項供玩家選擇：\n"
+            "en": "Generate choices for the player according to the follow game scene and export choices only:\n",
+            "zh-tw": "根據以下遊戲場景，生成玩家的選擇，並僅導出選擇：\n"
         }
         prompt = MAIN_PROMPT[self.language] + scene
         return prompt
@@ -62,16 +62,16 @@ class GamePrompter:
     def generate_text2image_prompt(self, text):
         """Generate a prompt for text2image."""
         MAIN_PROMPT = {
-            "en": "I want you to act as a prompt generator for Midjourney's artificial intelligence program. Your job is to provide detailed and creative descriptions that will inspire unique and interesting images from the AI. Keep in mind that the AI is capable of understanding a wide range of language and can interpret abstract concepts, so feel free to be as imaginative and descriptive as possible. For example, you could describe a scene from a futuristic city, or a surreal landscape filled with strange creatures. The more detailed and imaginative your description, the more interesting the resulting image will be. Rule: make the prompt less than 100 words and only response the prompt.",
-            "zh-tw": "我想讓你扮演Midjourney的人工智能程式的提示生成器。你的工作是提供詳細而創意的描述，以啟發AI產生獨特且有趣的圖像。請記住，AI能夠理解各種語言，並能夠理解抽象概念，因此，請隨意發揮創意和描述。例如，你可以描述未來城市的場景，或者是充滿奇怪生物的超現實景觀。你的描述越詳細和創意，產生的圖像就越有趣。規則：提示不超過100字，並且只回應提示。"
+            "en": "I want you to act as a prompt generator for Midjourney's artificial intelligence program. Your job is to provide detailed and creative descriptions accordint to the game scene provied by me that will inspire unique and interesting images from the AI. Keep in mind that the AI is capable of understanding a wide range of language and can interpret abstract concepts, so feel free to be as imaginative and descriptive as possible. For example, you could describe a scene from a futuristic city, or a surreal landscape filled with strange creatures. The more detailed and imaginative your description, the more interesting the resulting image will be.",
+            "zh-tw": "我想讓你扮演Midjourney的人工智能程式的提示生成器。你的工作是根據我提供的遊戲場景提供詳細而創意的描述，以激發AI產生獨特且有趣的圖像。請記住，AI能夠理解各種語言，並能夠理解抽象概念，因此，請隨意發揮創意和描述。例如，你可以描述未來城市的場景，或者是充滿奇怪生物的超現實景觀。你的描述越詳細和創意，產生的圖像就越有趣。規則：提示字數不超過100字，只回應提示，並且不要擴展原始遊戲場景。"
         }
         INTER_PROMPT = {
-            "en": "\nHere is my description:",
-            "zh-tw": "\n這是我的描述："
+            "en": "\nHere is my game scene:",
+            "zh-tw": "\n這是我的遊戲場景："
         }
         SUFFIX_PROMPT = {
-            "en": "\nGenerate the prompt:",
-            "zh-tw": "\n生成提示："
+            "en": "\nGenerate the prompt, the prompt should be less than 100 words and only response the prompt and Do not expand the original game scene:",
+            "zh-tw": "\n生成提示，提示字數不超過100字，只回應提示，並且不要擴展原始遊戲場景："
         }
         return MAIN_PROMPT[self.language] + INTER_PROMPT[self.language] + text + SUFFIX_PROMPT[self.language]
 
