@@ -23,8 +23,12 @@ main_game_scene= None
 character_choices = None
 last_game_scene = None
 
-#TEXT_ENGINE = "text-curie-001"
-TEXT_ENGINE = "text-davinci-003"
+text_engine_choices = {
+    "text-davinci-003": "text-davinci-003",
+    "gpt-3.5-turbo": "gpt-3.5-turbo",
+}
+
+TEXT_ENGINE = text_engine_choices["gpt-3.5-turbo"]
 IS_TRANSLATE = False
 TEXT_ENGINE_TEMPERATURE = 0.8
 
@@ -43,14 +47,23 @@ def check_api_key():
     openai.api_key = api_key
     try:
         # Check OpenAI by calling the OpenAI API
-        response =openai.Completion.create(
-            engine=TEXT_ENGINE,
-            prompt="This",
-            max_tokens=2,
-            n=1,
-            stop=None,
-            temperature=0.5,
-        )
+        if "text" in TEXT_ENGINE:
+            response =openai.Completion.create(
+                engine=TEXT_ENGINE,
+                prompt="This",
+                max_tokens=2,
+                n=1,
+                stop=None,
+                temperature=0.5,
+            )
+        elif "gpt-3.5" in TEXT_ENGINE:
+            response =openai.ChatCompletion.create(
+                model=TEXT_ENGINE,
+                messages=[
+                    {"role":"system", "content":"T"}
+                ],
+                max_tokens=1,
+            )
         # Return success message if API key is valid
         return jsonify({"api_key_valid": True, "message": "Valid API key."})
     except AuthenticationError as e:
@@ -131,35 +144,39 @@ def generate_game_scene(game_story):
     """Generate game scene using OpenAI GPT-3."""
     # Generate game scene using OpenAI GPT-3
     print(f"\n Start generating game_story...: {game_story}")
-    prompt_of_game_story = prompter.generate_game_scene(game_story)
+    prompt_of_game_story = prompter.generate_game_scene(game_story, text_engine=TEXT_ENGINE)
     print("\n Prompt of game_story: ", prompt_of_game_story)
-    response = openai.Completion.create(
-        engine=TEXT_ENGINE,
-        #engine="text-davinci-003",
-        prompt=prompt_of_game_story,
-        max_tokens=1024,
-        n=1,
-        stop=None,
-        temperature=TEXT_ENGINE_TEMPERATURE,
-    )
-    game_scene = response.choices[0].text.strip()
+
+    api_settings = {
+        **get_model_selection(TEXT_ENGINE),
+        **prompt_of_game_story,
+        "n": 1,
+        "max_tokens": 512,
+        "temperature": TEXT_ENGINE_TEMPERATURE,
+        "presence_penalty" : 2
+    }
+
+    response = get_engine_method(TEXT_ENGINE)(**api_settings)
+    game_scene =parse_text_response(response, text_engine=TEXT_ENGINE)
     print(f"\n Generated game_scene: {game_scene}")
     return game_scene
 
 def generate_character_choices(game_scene):
     """Generate character choices using OpenAI GPT-3."""
     print(f"\n Start generating character_choices...: {game_scene}")
-    prompt_of_character_choices = prompter.generate_character_choices_prompt(game_scene)
+    prompt_of_character_choices = prompter.generate_character_choices_prompt(game_scene, text_engine=TEXT_ENGINE)
     print("\n Prompt of character_choices: ", prompt_of_character_choices)
-    response = openai.Completion.create(
-        engine=TEXT_ENGINE,
-        prompt=prompt_of_character_choices,
-        max_tokens=1024,
-        n=1,
-        stop=None,
-        temperature=TEXT_ENGINE_TEMPERATURE,
-    )
-    character_choices = response.choices[0].text.strip()
+
+    api_settings = {
+        **get_model_selection(TEXT_ENGINE),
+        **prompt_of_character_choices,
+        "n": 1,
+        "max_tokens": 512,
+        "temperature": TEXT_ENGINE_TEMPERATURE,
+        "presence_penalty" : 2
+    }
+    response = get_engine_method(TEXT_ENGINE)(**api_settings)
+    character_choices = parse_text_response(response, text_engine=TEXT_ENGINE)
     print(f"\n Generated character_choices: {character_choices}")
     return character_choices
 
@@ -167,17 +184,18 @@ def compress_game_scene(game_scene, max_token):
     """Compress game scens using OpenAI GPT-3."""
     print(f"#############################\n")
     print(f"\n Start compressing game_scene...: {game_scene}")
-    prompt_of_compress_game_scene = prompter.compress_game_scene(game_scene)
-    #print("\n Prompt of compress_game_scene: ", prompt_of_compress_game_scene)
-    response = openai.Completion.create(
-        engine=TEXT_ENGINE,
-        prompt=prompt_of_compress_game_scene,
-        max_tokens=max_token,
-        n=1,
-        stop=None,
-        temperature=0.5,
-    )
-    compressed_game_scene = response.choices[0].text.strip()
+    prompt_of_compress_game_scene = prompter.compress_game_scene(game_scene, text_engine=TEXT_ENGINE)
+    
+    api_settings = {
+        **get_model_selection(TEXT_ENGINE),
+        **prompt_of_compress_game_scene,
+        "n": 1,
+        "max_tokens": max_token,
+        "temperature": 0.5,
+        "presence_penalty" : 2, 
+    }
+    response = get_engine_method(TEXT_ENGINE)(**api_settings)
+    compressed_game_scene = parse_text_response(response, text_engine=TEXT_ENGINE)
     print(f"\n Compressed game_scene: {compressed_game_scene}")
     print(f"#############################\n")    
     return compressed_game_scene
@@ -233,29 +251,6 @@ def generate_game_image(game_scene):
     print(f"\n Generated game image: {game_image}")
     return game_image
 
-# Function to update game scene
-# def update_game_scene(last_game_scene, player_input):
-#     # Update game scene using OpenAI GPT-3
-#     #print(f"\n Start updating game scene...: {game_scene}, {player_input}")
-#     global main_game_scene
-
-#     updated_game_scene_prompt = prompter.update_game_scene(
-#         main_game_scene = main_game_scene,
-#         last_game_scene = last_game_scene,
-#         player_input = player_input
-#     )
-#     print("\n Updated game scene prompt: ", updated_game_scene_prompt)
-#     response = openai.Completion.create(
-#         engine=TEXT_ENGINE,
-#         prompt=updated_game_scene_prompt,
-#         max_tokens=1024,
-#         n=1,
-#         stop=None,
-#         temperature=0.5,
-#     )
-#     updated_game_scene = response.choices[0].text.strip()
-#     print("\n Updated game scene: ", updated_game_scene)
-#     return updated_game_scene
 
 def update_game_scene_with_previous(previous_game_scenes, last_game_scene, player_input):
     # Update game scene using OpenAI GPT-3
@@ -263,19 +258,21 @@ def update_game_scene_with_previous(previous_game_scenes, last_game_scene, playe
     updated_game_scene_prompt = prompter.update_game_scene_with_previous(
         previous_game_scenes = previous_game_scenes,
         last_game_scene = last_game_scene,
-        player_input = player_input
+        player_input = player_input,
+        text_engine=TEXT_ENGINE
     )
     print("\n ###########Updated game scene prompt#######\n")
     print(updated_game_scene_prompt)
-    response = openai.Completion.create(
-        engine=TEXT_ENGINE,
-        prompt=updated_game_scene_prompt,
-        max_tokens=1024,
-        n=1,
-        stop=None,
-        temperature=TEXT_ENGINE_TEMPERATURE,
-    )
-    updated_game_scene = response.choices[0].text.strip()
+    api_settings = {
+        **get_model_selection(TEXT_ENGINE),
+        **updated_game_scene_prompt,
+        "n": 1,
+        "max_tokens": 512,
+        "temperature": TEXT_ENGINE_TEMPERATURE,
+        "presence_penalty" : 2
+    }
+    response = get_engine_method(TEXT_ENGINE)(**api_settings)
+    updated_game_scene = parse_text_response(response, text_engine=TEXT_ENGINE)
     print("\n Updated game scene: ", updated_game_scene)
     return updated_game_scene
 
@@ -290,5 +287,32 @@ def update_game_image(game_scene, game_image):
     )
     updated_game_image = response['data'][0]['url']
     return updated_game_image
+
+def parse_text_response(openai_text_response, text_engine):
+    """According to the text engine, parse the response content.
+    
+    Different text engine support different response structures
+    """
+    if "text" in text_engine:
+        return openai_text_response.choices[0].text.strip()
+    elif "gpt-3.5" in text_engine:
+        return openai_text_response['choices'][0]['message']['content']
+
+def get_model_selection(text_engine):
+    """Return the model selection according to the text engine."""
+    model_seletection = {
+        "gpt-3.5-turbo": {  "model": text_engine},
+        "text-davinci-003": {  "engine": text_engine},
+    }
+    return model_seletection[text_engine]
+
+def get_engine_method(text_engine):
+    """Return the engine method according to the text engine."""
+    method_selected = {
+        "gpt-3.5-turbo": openai.ChatCompletion.create,
+        "text-davinci-003": openai.Completion.create,
+    }
+    return method_selected[text_engine]
+
 if __name__ == "__main__":
     app.run(debug=True, port=5007)

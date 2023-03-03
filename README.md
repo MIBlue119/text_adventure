@@ -19,7 +19,7 @@ Before running the application, you need to have the following:
 3. Run `pip install -r requirements.txt` to install the necessary Python libraries
 4. Set your OpenAI API key as an environment variable by running `export OPENAI_API_KEY=<YOUR_API_KEY>` (Unix-based systems) or `set OPENAI_API_KEY=<YOUR_API_KEY>` (Windows)
 5. Run `python app.py` to start the Flask server
-6. Open a web browser and go to `http://127.0.0.1:500` to play the game
+6. Open a web browser and go to `http://127.0.0.1:5007` to play the game
 
 ## Usage
 
@@ -35,6 +35,11 @@ Before running the application, you need to have the following:
 - Flask
 - HTML/CSS/JavaScript
 - Bootstrap
+
+
+## Resources
+
+- https://github.com/openai/openai-cookbook/blob/main/examples/How_to_format_inputs_to_ChatGPT_models.ipynb
 
 ## Credits
 
