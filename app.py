@@ -135,24 +135,16 @@ def generate_game_scene(game_story):
     prompt_of_game_story = prompter.generate_game_scene(game_story, text_engine=local_text_engine)
     print("\n Prompt of game_story: ", prompt_of_game_story)
 
-    model_seletection = {
-        "gpt-3.5-turbo": {  "model": local_text_engine},
-        "text-davinci-003": {  "model": local_text_engine},
-    }
     api_settings = {
-        **model_seletection[local_text_engine],
+        **get_model_selection(local_text_engine),
         **prompt_of_game_story,
         "n": 1,
         "max_tokens": 1024,
         "temperature": TEXT_ENGINE_TEMPERATURE,
         "presence_penalty" : 2
     }
-    api_selected = {
-        "gpt-3.5-turbo": openai.ChatCompletion.create,
-        "text-davinci-003": openai.Completion.create,
-    }
 
-    response = api_selected[local_text_engine](**api_settings)
+    response = get_engine_method(local_text_engine)(**api_settings)
     game_scene =parse_text_response(response, text_engine=local_text_engine)
     print(f"\n Generated game_scene: {game_scene}")
     return game_scene
@@ -288,5 +280,22 @@ def parse_text_response(openai_text_response, text_engine):
         return openai_text_response.choices[0].text.strip()
     elif "gpt-3.5" in text_engine:
         return openai_text_response['choices'][0]['message']['content']
+
+def get_model_selection(text_engine):
+    """Return the model selection according to the text engine."""
+    model_seletection = {
+        "gpt-3.5-turbo": {  "model": text_engine},
+        "text-davinci-003": {  "engine": text_engine},
+    }
+    return model_seletection[text_engine]
+
+def get_engine_method(text_engine):
+    """Return the engine method according to the text engine."""
+    method_selected = {
+        "gpt-3.5-turbo": openai.ChatCompletion.create,
+        "text-davinci-003": openai.Completion.create,
+    }
+    return method_selected[text_engine]
+
 if __name__ == "__main__":
     app.run(debug=True, port=5007)
