@@ -130,19 +130,30 @@ def update_game():
 def generate_game_scene(game_story):
     """Generate game scene using OpenAI GPT-3."""
     # Generate game scene using OpenAI GPT-3
+    local_text_engine = "gpt-3.5-turbo"
     print(f"\n Start generating game_story...: {game_story}")
-    prompt_of_game_story = prompter.generate_game_scene(game_story)
+    prompt_of_game_story = prompter.generate_game_scene(game_story, text_engine=local_text_engine)
     print("\n Prompt of game_story: ", prompt_of_game_story)
-    response = openai.Completion.create(
-        engine=TEXT_ENGINE,
-        #engine="text-davinci-003",
-        prompt=prompt_of_game_story,
-        max_tokens=1024,
-        n=1,
-        stop=None,
-        temperature=TEXT_ENGINE_TEMPERATURE,
-    )
-    game_scene = response.choices[0].text.strip()
+
+    model_seletection = {
+        "gpt-3.5-turbo": {  "model": local_text_engine},
+        "text-davinci-003": {  "model": local_text_engine},
+    }
+    api_settings = {
+        **model_seletection[local_text_engine],
+        **prompt_of_game_story,
+        "n": 1,
+        "max_tokens": 1024,
+        "temperature": TEXT_ENGINE_TEMPERATURE,
+        "presence_penalty" : 2
+    }
+    api_selected = {
+        "gpt-3.5-turbo": openai.ChatCompletion.create,
+        "text-davinci-003": openai.Completion.create,
+    }
+
+    response = api_selected[local_text_engine](**api_settings)
+    game_scene =parse_text_response(response, text_engine=local_text_engine)
     print(f"\n Generated game_scene: {game_scene}")
     return game_scene
 
@@ -233,29 +244,6 @@ def generate_game_image(game_scene):
     print(f"\n Generated game image: {game_image}")
     return game_image
 
-# Function to update game scene
-# def update_game_scene(last_game_scene, player_input):
-#     # Update game scene using OpenAI GPT-3
-#     #print(f"\n Start updating game scene...: {game_scene}, {player_input}")
-#     global main_game_scene
-
-#     updated_game_scene_prompt = prompter.update_game_scene(
-#         main_game_scene = main_game_scene,
-#         last_game_scene = last_game_scene,
-#         player_input = player_input
-#     )
-#     print("\n Updated game scene prompt: ", updated_game_scene_prompt)
-#     response = openai.Completion.create(
-#         engine=TEXT_ENGINE,
-#         prompt=updated_game_scene_prompt,
-#         max_tokens=1024,
-#         n=1,
-#         stop=None,
-#         temperature=0.5,
-#     )
-#     updated_game_scene = response.choices[0].text.strip()
-#     print("\n Updated game scene: ", updated_game_scene)
-#     return updated_game_scene
 
 def update_game_scene_with_previous(previous_game_scenes, last_game_scene, player_input):
     # Update game scene using OpenAI GPT-3
@@ -290,5 +278,15 @@ def update_game_image(game_scene, game_image):
     )
     updated_game_image = response['data'][0]['url']
     return updated_game_image
+
+def parse_text_response(openai_text_response, text_engine):
+    """According to the text engine, parse the response content.
+    
+    Different text engine support different response structures
+    """
+    if "text" in text_engine:
+        return openai_text_response.choices[0].text.strip()
+    elif "gpt-3.5" in text_engine:
+        return openai_text_response['choices'][0]['message']['content']
 if __name__ == "__main__":
     app.run(debug=True, port=5007)

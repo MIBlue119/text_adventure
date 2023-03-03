@@ -20,7 +20,7 @@ class GamePrompter:
     def __init__(self, language: str = "en"):
         self.language = language
     
-    def generate_game_scene(self,game_story: str = None):
+    def generate_game_scene(self,game_story: str = None, text_engine: str = None):
         """Generate a game scene."""
         if game_story is None or game_story == "Random":
             MAIN_PROMPT ={
@@ -36,7 +36,18 @@ class GamePrompter:
             "en": "\nGenerate the game scene to let player interation with it.",
             "zh-tw": "\n生成遊戲場景，讓玩家與之互動。"
         }
-        return MAIN_PROMPT[self.language] + SUFFIX_PROMPT[self.language]
+        if "text" in text_engine:
+            return {
+                "prompt": MAIN_PROMPT[self.language] + SUFFIX_PROMPT[self.language]
+            }
+        elif  "gpt-3.5" in text_engine:
+            return {
+                "messages": [
+                    {"role":"system", "content":MAIN_PROMPT[self.language]},
+                    {"role":"user", "content":SUFFIX_PROMPT[self.language]}
+                ]
+            }
+            
     
     def generate_character_choices_prompt(self, scene):
         MAIN_PROMPT= {
