@@ -151,7 +151,7 @@ def generate_game_scene(game_story):
         **get_model_selection(TEXT_ENGINE),
         **prompt_of_game_story,
         "n": 1,
-        "max_tokens": 1024,
+        "max_tokens": 512,
         "temperature": TEXT_ENGINE_TEMPERATURE,
         "presence_penalty" : 2
     }
@@ -171,7 +171,7 @@ def generate_character_choices(game_scene):
         **get_model_selection(TEXT_ENGINE),
         **prompt_of_character_choices,
         "n": 1,
-        "max_tokens": 1024,
+        "max_tokens": 512,
         "temperature": TEXT_ENGINE_TEMPERATURE,
         "presence_penalty" : 2
     }
@@ -267,7 +267,7 @@ def update_game_scene_with_previous(previous_game_scenes, last_game_scene, playe
         **get_model_selection(TEXT_ENGINE),
         **updated_game_scene_prompt,
         "n": 1,
-        "max_tokens": 1024,
+        "max_tokens": 512,
         "temperature": TEXT_ENGINE_TEMPERATURE,
         "presence_penalty" : 2
     }
