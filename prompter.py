@@ -49,24 +49,43 @@ class GamePrompter:
             }
             
     
-    def generate_character_choices_prompt(self, scene):
+    def generate_character_choices_prompt(self, scene, text_engine: str = None):
         MAIN_PROMPT= {
             "en":  "Provide several identities for the player to choose from according to the following game scene:\n",
             "zh-tw": "根據以下遊戲場景，提供幾個供玩家選擇的身份：\n"
         }
-        return MAIN_PROMPT[self.language] + scene
+        if "text" in text_engine:
+            return {
+                "prompt": MAIN_PROMPT[self.language] + scene
+            }
+        
+        elif "gpt-3.5" in text_engine:
+            return {
+                "messages": [
+                    {"role":"system", "content":MAIN_PROMPT[self.language]},
+                    {"role":"user", "content":scene}
+                ]
+            }
 
 
-    def generate_game_scene_choices(self, scene):
+    def generate_game_scene_choices(self, scene, text_engine: str = None):
         """Generate choices for the game scene."""
         MAIN_PROMPT = {
             "en": "Generate choices for the player according to the follow game scene and export choices only:\n",
             "zh-tw": "根據以下遊戲場景，生成玩家的選擇，並僅導出選擇：\n"
         }
-        prompt = MAIN_PROMPT[self.language] + scene
-        return prompt
+        if "text" in text_engine:
+            prompt = MAIN_PROMPT[self.language] + scene
+            return {"prompt":prompt}
+        elif "gpt-3.5" in text_engine:
+            return {
+                "messages": [
+                    {"role":"system", "content":MAIN_PROMPT[self.language]},
+                    {"role":"user", "content":scene}
+                ]
+            }
 
-    def summarize_game_scene(self, text):
+    def summarize_game_scene(self, text, text_engine: str = None):
         """
         Summarize the game scene.
         """
@@ -74,9 +93,18 @@ class GamePrompter:
             "en": "Summarize following game scene under 500 words and don't add other description:\n",
             "zh-tw": "將以下遊戲場景總結在500字內，並且不要添加其他描述：\n"
         }
-        return MAIN_PROMPT[self.language] + text
+        if "text" in text_engine:
+            return {
+                "prompt":MAIN_PROMPT[self.language] + text}
+        elif "gpt-3.5" in text_engine:
+            return {
+                "messages": [
+                    {"role":"system", "content":MAIN_PROMPT[self.language]},
+                    {"role":"user", "content":text}
+                ]
+            }
 
-    def compress_game_scene(self, text):
+    def compress_game_scene(self, text, text_engine: str = None):
         """
         Compress the game scene.
         """
@@ -84,9 +112,17 @@ class GamePrompter:
             "en": "Summarize following game scene under 50 tokens and don't add other description:\n",
             "zh-tw": "將以下遊戲場景總結在50個token內，並且不要添加其他描述：\n"
         }
-        return MAIN_PROMPT[self.language] + text    
+        if "text" in text_engine:
+            return MAIN_PROMPT[self.language] + text
+        elif "gpt-3.5" in text_engine:
+            return {
+                "messages": [
+                    {"role":"system", "content":MAIN_PROMPT[self.language]},
+                    {"role":"user", "content":text}
+                ]
+            }    
     
-    def generate_text2image_prompt(self, text):
+    def generate_text2image_prompt(self, text, text_engine: str = None):
         """Generate a prompt for text2image."""
         MAIN_PROMPT = {
             "en": "I want you to act as a prompt generator for Midjourney's artificial intelligence program. Your job is to provide detailed and creative descriptions accordint to the game scene provied by me that will inspire unique and interesting images from the AI. Keep in mind that the AI is capable of understanding a wide range of language and can interpret abstract concepts, so feel free to be as imaginative and descriptive as possible. For example, you could describe a scene from a futuristic city, or a surreal landscape filled with strange creatures. The more detailed and imaginative your description, the more interesting the resulting image will be.",
@@ -100,10 +136,19 @@ class GamePrompter:
             "en": "\nGenerate the prompt, the prompt should be less than 100 words and only response the prompt and Do not expand the original game scene:",
             "zh-tw": "\n生成提示，提示字數不超過100字，只回應提示，並且不要擴展原始遊戲場景："
         }
-        return MAIN_PROMPT[self.language] + INTER_PROMPT[self.language] + text + SUFFIX_PROMPT[self.language]
+        if "text" in text_engine:
+            return {"prompt":
+                        MAIN_PROMPT[self.language] + INTER_PROMPT[self.language] + text + SUFFIX_PROMPT[self.language]}
+        elif "gpt-3.5" in text_engine:
+            return {
+                "messages": [
+                    {"role":"system", "content":MAIN_PROMPT[self.language]},
+                    {"role":"user", "content":INTER_PROMPT[self.language] + text + SUFFIX_PROMPT[self.language]}
+                ]
+            }
 
 
-    def update_game_scene(self, main_game_scene, last_game_scene, player_input):
+    def update_game_scene(self, main_game_scene, last_game_scene, player_input, text_engine: str = None):
         """Update the game scene.
         
         Args:
@@ -123,16 +168,28 @@ class GamePrompter:
             "en": "\nGenerate the next game scene to let player interation with it and provide three choices for the player.",
             "zh-tw": "\n生成下一個遊戲場景，讓玩家與之互動，並為玩家提供三個選擇。"
         }
+        if "text" in text_engine:
+            if main_game_scene in  last_game_scene:
+                prompt = START_PROMPT[self.language] + last_game_scene + INTER_PROMPT[self.language] + player_input + SUFFIX_PROMPT[self.language]
 
-        if main_game_scene in  last_game_scene:
-            prompt = START_PROMPT[self.language] + last_game_scene + INTER_PROMPT[self.language] + player_input + SUFFIX_PROMPT[self.language]
-            
-        else:
-            prompt = START_PROMPT[self.language] + main_game_scene +"\n" + last_game_scene + "\n" +  INTER_PROMPT[self.language] + player_input + SUFFIX_PROMPT[self.language]
+            else:
+                prompt = START_PROMPT[self.language] + main_game_scene +"\n" + last_game_scene + "\n" +  INTER_PROMPT[self.language] + player_input + SUFFIX_PROMPT[self.language]
 
-        return prompt
+            return {"prompt":prompt}
+        elif "gpt-3.5" in text_engine:
+            if main_game_scene in  last_game_scene:
+                system_start_prompt = START_PROMPT[self.language] + last_game_scene + INTER_PROMPT[self.language] + player_input + SUFFIX_PROMPT[self.language]
+
+            else:
+                system_start_prompt = START_PROMPT[self.language] + main_game_scene +"\n" + last_game_scene + "\n" +  INTER_PROMPT[self.language] + player_input + SUFFIX_PROMPT[self.language]
+
+            return {
+                "messages": [
+                    {"role":"system", "content":system_start_prompt}
+                ]
+            }
     
-    def update_game_scene_with_previous(self, previous_game_scenes, last_game_scene, player_input):
+    def update_game_scene_with_previous(self, previous_game_scenes, last_game_scene, player_input, text_engine: str = None):
         """Update the game scene.
         
         Args:
@@ -156,14 +213,30 @@ class GamePrompter:
         SUFFIX_PROMPT = {
             "en": "\n Generate the next game scene to let player interation with it. Please describe in detail all the items/creatures in the scene. If characters in the scene have dialogue with the protagonist, please output the dialogue in its entirety. If the protagonist interacts with any creatures in the scene, please describe the interaction process. Do not repeat scenes or dialogue. And provide three choices for the player.",
             "zh-tw": "\n生成下一個遊戲場景，讓玩家與之互動。請詳細描述場景中的所有物品/生物。如果場景中的角色與主角對話，請輸出完整的對話。如果主角與場景中的任何生物互動，請描述互動過程。不要重複場景或對話。並為玩家提供三個選擇。"
-        }        
-        # Append the previous game scenes 
-        prompt = START_PROMPT[self.language]
-        for game_scene in previous_game_scenes:
-            prompt += game_scene + "\n"
+        } 
 
-        # Append the last game scene
-        prompt += last_game_scene + "\n"
-        prompt += INTER_PROMPT[self.language] + player_input + SUFFIX_PROMPT[self.language]
-        return prompt    
+        if "text" in text_engine:    
+            # Append the previous game scenes 
+            prompt = START_PROMPT[self.language]
+            for game_scene in previous_game_scenes:
+                prompt += game_scene + "\n"
+
+            # Append the last game scene
+            prompt += last_game_scene + "\n"
+            prompt += INTER_PROMPT[self.language] + player_input + SUFFIX_PROMPT[self.language]
+            return {"prompt":prompt}
+        elif "gpt-3.5" in text_engine:
+            # Append the previous game scenes 
+            system_start_prompt = START_PROMPT[self.language]
+            for game_scene in previous_game_scenes:
+                system_start_prompt += game_scene + "\n"
+
+            # Append the last game scene
+            system_start_prompt += last_game_scene + "\n"
+            system_start_prompt += INTER_PROMPT[self.language] + player_input + SUFFIX_PROMPT[self.language]
+            return {
+                "messages": [
+                    {"role":"system", "content":system_start_prompt}
+                ]
+            }    
 
