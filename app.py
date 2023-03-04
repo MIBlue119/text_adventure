@@ -6,8 +6,8 @@ import requests
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from openai.error import AuthenticationError
-from utils import ( language_translate, calculate_tokens_from_text)
-from prompter import get_game_prompter_instance
+from core.utils import ( language_translate, calculate_tokens_from_text)
+from core.prompter import get_game_prompter_instance
 # Initialize Flask app
 app = Flask(__name__, static_folder='static', template_folder='templates')
 CORS(app)
