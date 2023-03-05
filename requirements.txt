@@ -3,4 +3,4 @@ openai
 Pillow==8.4.0
 flask-cors
 tiktoken
-googletrans
+streamlit

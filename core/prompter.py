@@ -89,18 +89,14 @@ class GamePrompter:
         """
         Summarize the game scene.
         """
-        MAIN_PROMPT = {
-            "en": "Summarize following game scene under 500 words and don't add other description:\n",
-            "zh-tw": "將以下遊戲場景總結在500字內，並且不要添加其他描述：\n"
-        }
+        MAIN_PROMPT =  f"#Input\n{text}\n#lang:eng#Instuctions:TL;DR:"
         if "text" in text_engine:
             return {
-                "prompt":MAIN_PROMPT[self.language] + text}
+                "prompt":MAIN_PROMPT}
         elif "gpt-3.5" in text_engine:
             return {
                 "messages": [
-                    {"role":"system", "content":MAIN_PROMPT[self.language]},
-                    {"role":"user", "content":text}
+                    {"role":"system", "content":MAIN_PROMPT},
                 ]
             }
 
@@ -124,6 +120,7 @@ class GamePrompter:
     
     def generate_text2image_prompt(self, text, text_engine: str = None):
         """Generate a prompt for text2image."""
+        language = "en"
         MAIN_PROMPT = {
             "en": "I want you to act as a prompt generator for Midjourney's artificial intelligence program. Your job is to provide detailed and creative descriptions accordint to the game scene provied by me that will inspire unique and interesting images from the AI. Keep in mind that the AI is capable of understanding a wide range of language and can interpret abstract concepts, so feel free to be as imaginative and descriptive as possible. For example, you could describe a scene from a futuristic city, or a surreal landscape filled with strange creatures. The more detailed and imaginative your description, the more interesting the resulting image will be.",
             "zh-tw": "我想讓你扮演Midjourney的人工智能程式的提示生成器。你的工作是根據我提供的遊戲場景提供詳細而創意的描述，以激發AI產生獨特且有趣的圖像。請記住，AI能夠理解各種語言，並能夠理解抽象概念，因此，請隨意發揮創意和描述。例如，你可以描述未來城市的場景，或者是充滿奇怪生物的超現實景觀。你的描述越詳細和創意，產生的圖像就越有趣。規則：提示字數不超過100字，只回應提示，並且不要擴展原始遊戲場景。"
@@ -138,12 +135,12 @@ class GamePrompter:
         }
         if "text" in text_engine:
             return {"prompt":
-                        MAIN_PROMPT[self.language] + INTER_PROMPT[self.language] + text + SUFFIX_PROMPT[self.language]}
+                        MAIN_PROMPT[language] + INTER_PROMPT[language] + text + SUFFIX_PROMPT[language]}
         elif "gpt-3.5" in text_engine:
             return {
                 "messages": [
-                    {"role":"system", "content":MAIN_PROMPT[self.language]},
-                    {"role":"user", "content":INTER_PROMPT[self.language] + text + SUFFIX_PROMPT[self.language]}
+                    {"role":"system", "content":MAIN_PROMPT[language]},
+                    {"role":"user", "content":INTER_PROMPT[language] + text + SUFFIX_PROMPT[language]}
                 ]
             }
 

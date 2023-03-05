@@ -71,36 +71,31 @@ def compress_game_scene(game_scene, max_token):
 def generate_dalle2_prompt(game_scene):
     """Generate DALL-E 2 prompt."""
     # Call the api to summarize the game scene first
-    # print(f"/n Start summarizing game_scene for DALLE-2: {game_scene}")
-    # game_scene_tokens = calculate_tokens_from_text(game_scene)
-    # if game_scene_tokens > 100:
-    #     summarize_prompt = prompter.summarize_game_scene(game_scene)
-    #     response = openai.Completion.create(
-    #         engine=TEXT_ENGINE,
-    #         prompt=summarize_prompt,
-    #         max_tokens=1024,
-    #         n=1,
-    #         stop=None,
-    #         temperature=0.5,
-    #     )
-    #     summarized_game_scene = response.choices[0].text.strip()
-    #     # Generate DALLE2 prompt
-    #     print(f"\n Start generating DALLE2 prompt with summarized game thene...: {summarized_game_scene}")    
-    #     text2image_prompt =prompter.generate_text2image_prompt(summarized_game_scene)
-
-    #     print(f"\n Start generating Midjourney's prompt: {text2image_prompt}")
-    #     response = openai.Completion.create(
-    #         engine=TEXT_ENGINE,
-    #         prompt=text2image_prompt,
-    #         max_tokens=1024,
-    #         n=1,
-    #         stop=None,
-    #         temperature=0.5,
-    #     )
-    #     dalle2_prompt = response.choices[0].text.strip()
-    # else:
-    #     dalle2_prompt = game_scene
-    dalle2_prompt = game_scene
+    print(f"/n Start summarizing game_scene for DALLE-2: {game_scene}")
+    summarize_prompt = prompter.summarize_game_scene(game_scene, text_engine=TEXT_ENGINE)
+    api_settings = {
+        **get_model_selection(TEXT_ENGINE),
+        **summarize_prompt,
+        "n": 1,
+        "max_tokens": 256,
+        "temperature": 0.5,
+        "presence_penalty" : 2,
+    }
+    response = get_engine_method(TEXT_ENGINE)(**api_settings)
+    summarized_game_scene = parse_text_response(response, text_engine=TEXT_ENGINE)
+    # Generate text 2 image prompt for DALL-E 2
+    text2image_prompt = prompter.generate_text2image_prompt(summarized_game_scene, text_engine=TEXT_ENGINE)
+    api_settings = {
+        **get_model_selection(TEXT_ENGINE),
+        **text2image_prompt,
+        "n": 1,
+        "max_tokens": 256,
+        "temperature": 0.5,
+        "presence_penalty" : 2,
+    }
+    response = get_engine_method(TEXT_ENGINE)(**api_settings)
+    dalle2_prompt = parse_text_response(response, text_engine=TEXT_ENGINE)
+    dalle2_prompt = dalle2_prompt +",in the Digital art style, high quality,  more details"
     print(f"\n Generated DALLE2 prompt: {dalle2_prompt}")
     return dalle2_prompt
 

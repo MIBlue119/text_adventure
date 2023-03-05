@@ -36,10 +36,10 @@ Before running the application, you need to have the following:
 - HTML/CSS/JavaScript
 - Bootstrap
 
-
 ## Resources
 
 - https://github.com/openai/openai-cookbook/blob/main/examples/How_to_format_inputs_to_ChatGPT_models.ipynb
+- https://hpjansson.org/blag/2022/08/16/adventure-game-graphics-with-dall-e-2/
 
 ## Credits
 
